@@ -1,0 +1,831 @@
+Exercise 1: Write a C program to convert and print a given valid parenthesized infix arithmetic expression to 
+postfix expression. The expression consists of a single character operands and the binary operators +,-,* and /
+#include<stdio.h>
+#include<ctype.h>
+char stack[100];
+int top = -1;
+void push(char x)
+{
+stack[++top] = x;
+}
+char pop()
+{
+if(top == -1)
+return -1;
+else
+return stack[top--];
+}
+int priority(char x)
+{
+if(x == '(')
+return 0;
+if(x == '+' || x == '-')
+return 1;
+if(x == '*' || x == '/')
+return 2;
+return 0;
+}
+int main()
+{
+ char exp[100];
+char *e, x;
+printf("Enter the expression : ");
+scanf("%s",exp);
+printf("\n");
+e = exp;
+while(*e != '\0')
+{
+if(isalnum(*e))
+printf("%c ",*e);
+else if(*e == '(')
+push(*e);
+else if(*e == ')')
+{
+while((x = pop()) != '(')
+printf("%c ", x);
+}
+else
+{
+while(priority(stack[top]) >= priority(*e))
+printf("%c ",pop());
+push(*e);
+}
+e++;
+}
+while(top != -1)
+{
+printf("%c ",pop());
+}
+return 0;
+}
+Exercise 2: write a C program to evaluate a valid suffix/postfix expression using stack. Assume that the 
+suffix/postfix expression is read as a single line consisting of non-negative single digit operands and binary 
+arithmetic operators. The arithmetic operators are +,-,*, /.
+#include <stdio.h> 
+#include <stdlib.h> 
+#define MAX_SIZE 10
+// Stack implementation 
+int stack[MAX_SIZE]; 
+int top = -1; 
+void push(int item) { 
+ if (top >= MAX_SIZE - 1) { 
+printf("Stack Overflow\n"); 
+ return; 
+ } 
+ top++; 
+ stack[top] = item; 
+} 
+int pop() { 
+ if (top < 0) { 
+printf("Stack Underflow\n"); 
+ return -1; 
+ } 
+ int item = stack[top]; 
+ top--; 
+ return item; 
+} 
+int is_operator(char symbol) { 
+ if (symbol == '+' || symbol == '-' || symbol == '*' || symbol == '/') { 
+ return 1; 
+ } 
+ return 0; 
+} 
+int evaluate(char* expression) { 
+ int i = 0; 
+ char symbol = expression[i]; 
+ int operand1, operand2, result; 
+ 
+ while (symbol != '\0') { 
+ if (symbol >= '0' && symbol <= '9') { 
+ int num = symbol - '0'; 
+ push(num); 
+ } 
+ else if (is_operator(symbol)) { 
+ operand2 = pop(); 
+ operand1 = pop(); 
+ switch(symbol) { 
+ case '+': result = operand1 + operand2; break;
+ case '-': result = operand1 - operand2; break; 
+ case '*': result = operand1 * operand2; break; 
+ case '/': result = operand1 / operand2; break; 
+ } 
+ push(result); 
+ } 
+i++; 
+ symbol = expression[i]; 
+ } 
+ result = pop(); 
+ return result; 
+} 
+ 
+int main() { 
+ char expression[] = "5 6 7 + * 8 -";
+ int result = evaluate(expression); 
+printf("Result= %d\n", result); 
+return 0; 
+} 
+Exercise 3: Write a C program using recursive function for the following. a) To calculate GCD and LCM of 2 
+integers. b) To solve Tower of Hanoi problem. c) To search an element in a list using binary search.
+a)
+#include <stdio.h>
+int gcd(int n1, int n2) {
+ if (n2 != 0)
+ return gcd(n2, n1 % n2);
+ else
+ return n1;
+}
+int lcm(int a, int b) {
+ return (a * b) / gcd(a, b);
+}
+int main() {
+ int n1, n2;
+ printf("Enter two positive integers: ");
+ scanf("%d %d", &n1, &n2);
+ printf("G.C.D of %d and %d is %d.", n1, n2, gcd(n1, n2));
+int result = lcm(n1, n2);
+ printf("LCM of %d and %d is %d\n", n1, n2, result);
+ return 0;
+}
+b)
+#include <stdio.h>
+void towerOfHanoi(int n, char from_rod, char to_rod, char aux_rod)
+{ if (n == 1)
+ { printf("\n Move disk 1 from rod %c to rod %c", from_rod, to_rod);
+ return; }
+ towerOfHanoi(n-1, from_rod, aux_rod, to_rod);
+ printf("\n Move disk %d from rod %c to rod %c", n, from_rod, to_rod);
+ towerOfHanoi(n-1, aux_rod, to_rod, from_rod);
+}
+int main()
+{
+ int n = 3; // Number of disks
+ towerOfHanoi(n, 'A', 'C', 'B'); // A, B and C are names of rods
+ return 0;
+}
+c)
+#include <stdio.h>
+int BinarySearch(int array[], int startindex, int endindex, int element){
+ int middle;
+ if(endindex >= startindex){
+ middle = startindex + (endindex - startindex )/2;
+ if (array[middle] == element)
+ return middle;
+ if (array[middle] > element)
+ return BinarySearch(array, startindex, middle-1, element);
+ return BinarySearch(array, middle+1, endindex, element);
+ }
+ return -1;
+}
+int main(void){
+ int array[] = {1, 4, 7, 9, 16, 56, 70};
+ int n = 7;
+ int element = 9;
+ int foundindex = BinarySearch(array, 0, n-1, element);
+ if(foundindex == -1 ) {
+ printf("Element not found in the array ");
+ }
+ else {
+ printf("Element found at index : %d",foundindex);
+ }
+ return 0;
+}
+Exercise 4: Write a program to design a priority queue which is maintained as a set of queues 
+(assume a maximum of 3 queues).The elements are inserted based upon the given priority. the 
+deletion of an element is to be done starting from the first queue, if it is not empty. If it is Empty the 
+elements from the second queue will be deleted and so on
+#include <stdio.h>
+#include <stdlib.h>
+#define MAX_SIZE 100
+#define MAX_PRIORITY 3
+// Define a structure for the queue
+typedef struct {
+ int data[MAX_SIZE];
+ int front;
+ int rear;
+} Queue;
+// Initialize a queue
+void initializeQueue(Queue* q) {
+ q->front = q->rear = -1;
+}
+// Check if a queue is empty
+int isEmpty(Queue* q) {
+ return q->front == -1;
+}
+// Check if a queue is full
+int isFull(Queue* q) {
+ return q->rear == MAX_SIZE - 1;
+}
+// Enqueue an element to the queue
+void enqueue(Queue* q, int value) {
+ if (isFull(q)) {
+ printf("Queue overflow\n");
+ return;
+ }
+ if (isEmpty(q)) {
+ q->front = 0;
+ }
+ q->data[++q->rear] = value;
+}
+// Dequeue an element from the queue
+int dequeue(Queue* q) {
+ if (isEmpty(q)) {
+ printf("Queue underflow\n");
+ return -1;
+ }
+ int value = q->data[q->front];
+ if (q->front >= q->rear) {
+ q->front = q->rear = -1;
+ } else {
+ q->front++;
+ }
+ return value;
+}
+// Define the priority queue as a set of 3 queues
+Queue priorityQueue[MAX_PRIORITY];
+// Initialize all priority queues
+void initializePriorityQueue() {
+ for (int i = 0; i < MAX_PRIORITY; i++) {
+ initializeQueue(&priorityQueue[i]);
+ }
+}
+// Enqueue an element with a given priority
+void priorityEnqueue(int value, int priority) {
+ if (priority < 0 || priority >= MAX_PRIORITY) {
+ printf("Invalid priority\n");
+ return;
+ }
+ enqueue(&priorityQueue[priority], value);
+}
+// Dequeue an element from the priority queue
+int priorityDequeue() {
+ for (int i = 0; i < MAX_PRIORITY; i++) {
+ if (!isEmpty(&priorityQueue[i])) {
+ return dequeue(&priorityQueue[i]);
+ }
+ }
+ printf("All queues are empty\n");
+ return -1;
+}
+// Main function to test the priority queue
+int main() {
+ initializePriorityQueue();
+ // Enqueue elements with different priorities
+ priorityEnqueue(10, 0);
+ priorityEnqueue(20, 1);
+ priorityEnqueue(30, 2);
+ priorityEnqueue(40, 0);
+ priorityEnqueue(50, 1);
+ // Dequeue elements and print them
+ printf("Dequeued: %d\n", priorityDequeue());
+ printf("Dequeued: %d\n", priorityDequeue());
+ printf("Dequeued: %d\n", priorityDequeue());
+ printf("Dequeued: %d\n", priorityDequeue());
+ printf("Dequeued: %d\n", priorityDequeue());
+ printf("Dequeued: %d\n", priorityDequeue());
+ return 0;
+}
+}
+Exercise 5: Write a C program using dynamic variables and pointers to construct a stack of integers 
+using singly linked list and to perform the following operations. a) PUSH b) POP 
+c) DISPLAY. The program should print the appropriate messages for the stack overflow and stack 
+empty.
+#include<stdio.h>
+#include<stdlib.h>
+typedef struct node {
+ int data;
+ struct node *next;
+} node;
+node *top = NULL; // Top of the stack
+// Function to create a new node
+node* getnode() {
+ node *new_node = (node *)malloc(sizeof(node));
+ if (new_node == NULL) {
+ printf("Error: Could not allocate memory for new node.\n");
+ exit(1);
+ }
+ new_node->data = 0;
+ new_node->next = NULL;
+ return new_node;
+}
+// Function to push an element onto the stack
+void push() {
+ int item;
+ printf("\nEnter the item which you want to push:\n");
+ scanf("%d", &item);
+ node *new_node = getnode();
+ new_node->data = item;
+ new_node->next = top;
+ top = new_node;
+ printf("\nNode pushed onto stack\n");
+}
+// Function to pop an element from the stack
+void pop() {
+ if (top == NULL) {
+ printf("\nStack is empty\n");
+ } else {
+ node *temp = top;
+ top = top->next;
+ free(temp);
+ printf("\nNode popped from stack\n");
+ }
+}
+// Function to display the stack
+void display() {
+ if (top == NULL) {
+ printf("\nStack is empty\n");
+ } else {
+ node *temp = top;
+ printf("\nStack elements:\n");
+ while (temp != NULL) {
+ printf("%d\t", temp->data);
+ temp = temp->next;
+ }
+ printf("\n");
+ }
+}
+// Main function to test the stack operations
+int main() {
+ int choice;
+ while (1) {
+ printf("Enter your choice: 1: PUSH\t2: POP\t3: DISPLAY\t4: EXIT\n");
+ scanf("%d", &choice);
+ switch (choice) {
+ case 1:
+ push();
+ break;
+ case 2:
+ pop();
+ break;
+ case 3:
+ display();
+ break;
+ case 4:
+ exit(0);
+ default:
+ printf("Incorrect choice \n");
+ }
+ }
+ return 0;
+}
+Exercise 6: Write the C program to support the following operations on doubly linked list where each 
+node consists of integers. a) Create a doubly linked list by adding each node at the front. b) Insert a 
+new node to the left of the node whose key value is read as an input. c) Delete the node of a given data 
+if it is found, otherwise display appropriate message. d) Display the contents of the list.
+#include <stdio.h>
+#include <stdlib.h>
+typedef struct node {
+ int data;
+ struct node *next;
+ struct node *prev; // Add a previous pointer for the doubly linked list
+} node;
+node *head = NULL; // Initialize head to NULL
+// Function to create a new node
+node* getnode() {
+ node *new_node = (node *)malloc(sizeof(node));
+ if (new_node == NULL) {
+ printf("Error: Could not allocate memory for new node.\n");
+ exit(1);
+ }
+ new_node->data = 0;
+ new_node->next = NULL;
+ new_node->prev = NULL; // Initialize the previous pointer to NULL
+ return new_node;
+}
+// Function to insert an element at the beginning of the doubly linked list
+void insertatbeg() {
+ int item;
+ printf("\nEnter the item which you want to insert:\n");
+ scanf("%d", &item);
+ node *new_node = getnode();
+ new_node->data = item;
+ new_node->next = head;
+ if (head != NULL) {
+ head->prev = new_node; // Update the previous pointer of the existing head
+ }
+ head = new_node;
+ printf("\nNode inserted\n");
+}
+// Function to insert a new node to the left of the node with the specified key
+void insertleft() {
+ int item, key;
+ printf("\nEnter the key value of the node to the left of which you want to insert the new node:\n");
+ scanf("%d", &key);
+ printf("\nEnter the item which you want to insert:\n");
+ scanf("%d", &item);
+ node *new_node = getnode();
+ new_node->data = item;
+ node *temp = head;
+ // If the list is empty
+ if (head == NULL) {
+ printf("\nThe list is empty. Inserting at the beginning.\n");
+ head = new_node;
+ printf("\nNode inserted\n");
+ return;
+ }
+ // Traverse the list to find the node with the given key
+ while (temp != NULL && temp->data != key) {
+ temp = temp->next;
+ }
+ // If the key is not found
+ if (temp == NULL) {
+ printf("\nKey not found in the list. Node not inserted.\n");
+ free(new_node);
+ return;
+ }
+ // Insert the new node to the left of the found node
+ new_node->next = temp;
+ new_node->prev = temp->prev;
+ if (temp->prev != NULL) {
+ temp->prev->next = new_node;
+ } else {
+ // If the node to be inserted is the new head
+ head = new_node;
+ }
+ temp->prev = new_node;
+ printf("\nNode inserted\n");
+}
+// Function to delete a node with the specified data value
+void deleteNode() {
+ int key;
+ printf("\nEnter the data value of the node to delete:\n");
+ scanf("%d", &key);
+ node *temp = head;
+ // Traverse the list to find the node with the given key
+ while (temp != NULL && temp->data != key) {
+ temp = temp->next;
+ }
+ // If the key is not found
+ if (temp == NULL) {
+ printf("\nNode with data %d not found.\n", key);
+ return;
+ }
+ // If the node to be deleted is the head
+ if (temp == head) {
+ head = temp->next;
+ if (head != NULL) {
+ head->prev = NULL;
+ }
+ } else {
+ // Update the pointers of the adjacent nodes
+ if (temp->prev != NULL) {
+ temp->prev->next = temp->next;
+ }
+ if (temp->next != NULL) {
+ temp->next->prev = temp->prev;
+ }
+ }
+ free(temp);
+ printf("\nNode with data %d deleted.\n", key);
+}
+// Function to display the elements of the doubly linked list
+void display() {
+ if (head == NULL) {
+ printf("\nList is empty\n");
+ return;
+ }
+ node *temp = head;
+ printf("\nList elements:\n");
+ while (temp != NULL) {
+ printf("%d\t", temp->data);
+ temp = temp->next;
+ }
+ printf("\n");
+}
+// Main function to test the doubly linked list operations
+int main() {
+ int choice;
+ while (1) {
+ printf("Enter your choice: 1:Insert at Beginning\t2:Insert Left of Key\t3:Delete Node by 
+Data\t4:Display\t5:Exit\n");
+ scanf("%d", &choice);
+ switch (choice) {
+ case 1:
+ insertatbeg();
+ break;
+ case 2:
+ insertleft();
+ break;
+ case 3:
+ deleteNode();
+ break;
+ case 4:
+ display();
+ break;
+ case 5:
+ exit(0);
+ default:
+ printf("Incorrect choice \n");
+ }
+ }
+ return 0;
+}
+Exercise 7: Write a C program for searching an element on a given list of integers using the a) Binary 
+search b) linear search
+BINARY SEARCH
+#include <stdio.h>
+int binarySearch(int arr[], int size, int target) {
+ int left = 0, right = size - 1;
+ 
+ while (left <= right) {
+ int mid = left + (right - left) / 2;
+ if (arr[mid] == target) {
+ return mid;
+ }
+ 
+ if (arr[mid] < target) {
+ left = mid + 1;
+ }
+ else {
+ right = mid - 1;
+ }
+ }
+ return -1;
+}
+int main() {
+ int arr[] = {2, 3, 4, 10, 40};
+ int n = sizeof(arr) / sizeof(arr[0]);
+ int target = 10;
+ int result = binarySearch(arr, n, target);
+ 
+ if (result == -1) {
+ printf("Element is not present in array\n");
+ } else {
+ printf("Element is present at index %d\n", result);
+ }
+ 
+ return 0;
+}
+LINEAR SEARCH
+#include <stdio.h>
+// Function for linear search
+int linearSearch(int arr[], int size, int target) {
+ for (int i = 0; i < size; i++) {
+ if (arr[i] == target) {
+ return i;
+ }
+ }
+ // Target not found
+ return -1;
+}
+int main() {
+ int arr[] = {2, 3, 4, 10, 40};
+ int n = sizeof(arr) / sizeof(arr[0]);
+ int target = 10;
+ int result = linearSearch(arr, n, target);
+ 
+ if (result == -1) {
+ printf("Element is not present in array\n");
+ } else {
+ printf("Element is present at index %d\n", result);
+ }
+ 
+ return 0;
+}
+Exercise 8: Write a C program to sort a list of N integers using quick sort algorithm.
+#include <stdio.h>
+// Function to swap two integers
+void swap(int* a, int* b) {
+int t = *a;
+*a = *b;
+*b = t;
+}
+// Partition function to place the pivot element at its correct position
+int partition(int arr[], int low, int high) {
+int pivot = arr[high];
+int i = (low - 1);
+for (int j = low; j <= high - 1; j++) {
+if (arr[j] < pivot) {
+i++;
+swap(&arr[i], &arr[j]);
+}
+}
+swap(&arr[i + 1], &arr[high]);
+return (i + 1);
+}
+// Quicksort function
+void quickSort(int arr[], int low, int high) {
+if (low < high) {
+int pi = partition(arr, low, high);
+quickSort(arr, low, pi - 1);
+quickSort(arr, pi + 1, high);
+}
+}
+// Function to print an array
+void printArray(int arr[], int size) {
+for (int i = 0; i < size; i++)
+printf("%d ", arr[i]);
+printf("\n");
+}
+// Driver program to test the quicksort functions
+int main() {
+int arr[] = {10, 7, 8, 9, 1, 5};
+int n = sizeof(arr) / sizeof(arr[0]);
+printf("Given array: \n");
+printArray(arr, n);
+quickSort(arr, 0, n - 1);
+printf("\nSorted array: \n");
+printArray(arr, n);
+return 0;
+}
+Mergesort
+#include <stdio.h>
+#include <stdlib.h>
+void merge(int arr[], int l, int m, int r) {
+int i, j, k;
+int n1 = m - l + 1;
+int n2 = r - m;
+// Create temporary arrays
+int L[n1], R[n2];
+// Copy data to temporary arrays L[] and R[]
+for (i = 0; i < n1; i++)
+L[i] = arr[l + i];
+for (j = 0; j < n2; j++)
+R[j] = arr[m + 1 + j];
+// Merge the temporary arrays back into arr[l..r]
+i = 0; // Initial index of first subarray
+j = 0; // Initial index of second subarray
+k = l; // Initial index of merged subarray
+while (i < n1 && j < n2) {
+if (L[i] <= R[j]) {
+arr[k] = L[i];
+i++;
+} else {
+arr[k] = R[j];
+j++;
+}
+k++;
+}
+// Copy the remaining elements of L[], if there are any
+while (i < n1) {
+arr[k] = L[i];
+i++;
+k++;
+}
+// Copy the remaining elements of R[], if there are any
+while (j < n2) {
+arr[k] = R[j];
+j++;
+k++;
+}
+}
+void mergeSort(int arr[], int l, int r) {
+if (l < r) {
+// Same as (l+r)/2, but avoids overflow for large l and h
+int m = l + (r - l) / 2;
+// Sort first and second halves
+mergeSort(arr, l, m);
+mergeSort(arr, m + 1, r);
+// Merge the sorted halves
+merge(arr, l, m, r);
+}
+}
+void printArray(int arr[], int size) {
+for (int i = 0; i < size; i++)
+printf("%d ", arr[i]);
+printf("\n");
+}
+int main() {
+int choice, n;
+printf("Enter the number of elements: ");
+scanf("%d", &n);
+int arr[n];
+printf("Enter the elements: ");
+for (int i = 0; i < n; i++)
+scanf("%d", &arr[i]);
+do {
+printf("\nMenu:\n");
+printf("1. Sort the array\n");
+printf("2. Print the sorted array\n");
+printf("3. Exit\n");
+printf("Enter your choice: ");
+scanf("%d", &choice);
+switch (choice) {
+case 1:
+mergeSort(arr, 0, n - 1);
+printf("Array sorted successfully.\n");
+break;
+case 2:
+printf("Sorted array: ");
+printArray(arr, n);
+break;
+case 3:
+printf("Exiting...");
+exit(0);
+default:
+printf("Invalid choice. Please enter a valid option.\n");
+}
+} while (choice != 3);
+return 0;
+}
+Exercise 9: Write a C program to sort a list of N integers using the heap sort algorithm.
+#include <stdio.h>
+#include <stdlib.h>
+// Function to swap the values at two indices in the array
+void swap(int* a, int* b) {
+int temp = *a;
+*a = *b;
+*b = temp;
+}
+// Function to heapify a subtree rooted with node i
+void heapify(int arr[], int n, int i) {
+int largest = i; // Initialize largest as root
+int left = 2 * i + 1; // Left child
+int right = 2 * i + 2; // Right child
+// If left child is larger than root
+if (left < n && arr[left] > arr[largest])
+largest = left;
+// If right child is larger than largest so far
+if (right < n && arr[right] > arr[largest])
+largest = right;
+// If largest is not root
+if (largest != i) {
+swap(&arr[i], &arr[largest]);
+// Recursively heapify the affected sub-tree
+heapify(arr, n, largest);
+}
+}
+// Main function to do heap sort
+void heapSort(int arr[], int n) {
+// Build heap (rearrange array)
+for (int i = n / 2 - 1; i >= 0; i--)
+heapify(arr, n, i);
+// One by one extract an element from heap
+for (int i = n - 1; i > 0; i--) {
+// Move current root to end
+swap(&arr[0], &arr[i]);
+// Call max heapify on the reduced heap
+heapify(arr, i, 0);
+}
+}
+// Function to print an array
+void printArray(int arr[], int n) {
+for (int i = 0; i < n; ++i)
+printf("%d ", arr[i]);
+printf("\n");
+}
+// Driver program to test the above functions
+int main() {
+int n;
+// Read the size of the array
+printf("Enter the number of elements in the array: ");
+scanf("%d", &n);
+// Allocate memory for the array
+int arr[n];
+// Read the elements of the array
+printf("Enter the elements of the array: ");
+for (int i = 0; i < n; i++) {
+scanf("%d", &arr[i]);
+}
+printf("Original array: \n");
+printArray(arr, n);
+heapSort(arr, n);
+printf("Sorted array: \n");
+printArray(arr, n);
+// Free the allocated memory
+free(arr);
+return 0;
+}
+Exercise 10: Write a C program to traverse the nodes in a graph using DFS.
+#include <stdio.h>
+#include <stdlib.h>
+void DFS(int i, int n, int visited[], int a[n][n]) {
+ int j;
+ printf("%d ", i);
+ visited[i] = 1;
+ for (j = 0; j < n; j++) {
+ if (a[i][j] == 1 && !visited[j]) {
+ DFS(j, n, visited, a);
+ }
+ }
+}
+int main() {
+ int n, i, j, startNode;
+ // Read the size of the matrix from the user
+ printf("Enter the number of vertices: ");
+ scanf("%d", &n);
+ int visited[n];
+ int a[n][n];
+ // Initialize visited array to 0
+ for (i = 0; i < n; i++) {
+ visited[i] = 0;
+ }
+ // Read the adjacency matrix from the user
+ printf("Enter the adjacency matrix:\n");
+ for (i = 0; i < n; i++) {
+ for (j = 0; j < n; j++) {
+ scanf("%d", &a[i][j]);
+ }
+ }
+ // Read the starting node for DFS traversal
+ printf("Enter the starting node for DFS: ");
+ scanf("%d", &startNode);
+ // Check if the starting node is valid
+ if (startNode < 0 || startNode >= n) {
+ printf("Invalid starting node.\n");
+ return 1;
+ }
+ // Start DFS from the given starting node
+ printf("Depth First Traversal starting from vertex %d:\n", startNode);
+ DFS(startNode, n, visited, a);
+ return 0;
+}
